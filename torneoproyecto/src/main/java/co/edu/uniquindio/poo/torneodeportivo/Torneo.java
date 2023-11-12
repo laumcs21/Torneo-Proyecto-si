@@ -27,7 +27,6 @@ public class Torneo {
     private final Collection<Equipo> equipos;
     private final Collection<Juez> jueces;
     private final CaracterTorneo caracterTorneo;
-    private final Collection<Enfrentamiento> enfrentamientos;
 
 
     public Torneo(String nombre, LocalDate fechaInicio,
@@ -57,7 +56,6 @@ public class Torneo {
         this.equipos = new LinkedList<>();
         this.jueces = new LinkedList<>();
         this.caracterTorneo = caracterTorneo;
-        this.enfrentamientos = new LinkedList<>();
     }
 
     public String getNombre() {
@@ -128,9 +126,6 @@ public class Torneo {
         equipos.add(equipo);
     }
 
-    /**
-     * Valida que el tipo de equipo a registrar es acorde al caracter del torneo
-     */
     private void validarCaracter(Equipo equipo) {
         ASSERTION.assertion( caracterTorneo.esValido(equipo),"El equipo a inscribir no es aceptable para el tipo de torneo");
     }
@@ -148,7 +143,7 @@ public class Torneo {
      * Valida que no exista ya un equipo registrado con el mismo nombre, en caso de haberlo genera un assertion error.
      */
     private void validarEquipoExiste(Equipo equipo) {
-        boolean existeEquipo = buscarEquipoPorNombre(equipo.nombre()).isPresent();
+        boolean existeEquipo = buscarEquipoPorNombre(equipo.getNombre()).isPresent();
         ASSERTION.assertion( !existeEquipo,"El equipo ya esta registrado");
     }
 
@@ -166,7 +161,7 @@ public class Torneo {
      * @return Un Optional<Equipo> con el equipo cuyo nombre sea igual al nombre buscado, o un Optional vacio en caso de no encontrar un equipo con nombre igual al dado.
      */
     public Optional<Equipo> buscarEquipoPorNombre(String nombre){
-        Predicate<Equipo> condicion = equipo->equipo.nombre().equals(nombre);
+        Predicate<Equipo> condicion = equipo->equipo.getNombre().equals(nombre);
         return equipos.stream().filter(condicion).findAny();
     }
 
@@ -248,40 +243,41 @@ public class Torneo {
     }
 
     /**
-     * Permite obtener una copia no modificable de la lista de los jueces registrados.
-     * @return Collection<juez> no modificable de los jueces registrados en el torneo.
+     * Permite obtener una copia no modificable de la lista de los equipos registrados.
+     * @return Collection<Equipo> no modificable de los equipos registrados en el torneo.
      */
     public Collection<Juez> getJueces() {
         return Collections.unmodifiableCollection(jueces);
     }
     
     /**
-     * Permite buscar un juez por su nombre y apenllido entre los jueces registrados en el torneo
-     * @param juez Nombre y Apellido del juez que se está buscando
-     * @return Un Optional<juez> con el juez cuyo nombre y apellido sea igual al del juez que se está buscando, o un Optional vacio en caso de no encontrar un juez con nombre y apellido igual al dado.
+     * Permite buscar un equipo por su nomnbre entre los equipos registrados en el torneo
+     * @param nombre Nombre del equipo que se está buscando
+     * @return Un Optional<Equipo> con el equipo cuyo nombre sea igual al nombre buscado, o un Optional vacio en caso de no encontrar un equipo con nombre igual al dado.
      */
     public Optional<Juez> buscarJuez(Juez juez){
         Predicate<Juez> nombreIgual = j->j.getNombre().equals(juez.getNombre());
         Predicate<Juez> apellidoIgual = j->j.getApellido().equals(juez.getApellido());
         return jueces.stream().filter(nombreIgual.and(apellidoIgual)).findAny();
     }
+//  Listado de los equipos y el número total de enfrentamientos ganados, 
+//empatados y perdidos.En orden descendente según el número de victorias, empates y perdidas.
 
-        /**
-     * Permite registrar un enfrentamiento en el torneo
-     * @param enfrentamiento Enfrentamiento a ser registrado
-     * @throws Se genera un error si el tipo de equipo de equipo a registrar en el enfrentamiento es incompatible, y si el estado a asignar es inválido
-     */
-    public void registrarEnfrentamiento(Enfrentamiento enfrentamiento) {
-        validarEstado(enfrentamiento); 
-        enfrentamientos.add(enfrentamiento);
+    public void registrarPartido(String equipoLocal, String equipoVisitante, String resultado) {
+        Equipo local = buscarEquipoPorNombre(equipoLocal).orElse(null);
+        Equipo visitante = buscarEquipoPorNombre(equipoVisitante).orElse(null);
+
+        if (local != null && visitante != null) {
+            if (resultado.equals("victoria")) {
+                local.registrarResultado("victoria");
+                visitante.registrarResultado("derrota");
+            } else if (resultado.equals("empate")) {
+                local.registrarResultado("empate");
+                visitante.registrarResultado("empate");
+            } else if (resultado.equals("derrota")) {
+                local.registrarResultado("derrota");
+                visitante.registrarResultado("victoria");
+            }
+        }
     }
-
-        /**
-     * Valida que el tipo de estado del enfrentamiento a registrar es acorde a la fecha y hora
-     */
-
-    private void validarEstado(Enfrentamiento enfrentamiento) {
-        ASSERTION.assertion( enfrentamiento.getEstado().esValido(enfrentamiento.getFechaYHora(), enfrentamiento.getResultadoLocal(), enfrentamiento.getResultadoVisitante()),"El estado del enfrentamiento a inscribir no es aceptable");
-    }
-    
 }
