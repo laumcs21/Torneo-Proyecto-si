@@ -110,4 +110,25 @@ public class EquipoTest {
         
         LOG.info("Fin de prueba inscripcionNoAbierta...");
     }
+    
+    @Test
+    public void testRegistrarVictoria() {
+        Equipo equipo = new Equipo();
+        equipo.registrarResultado("victoria");
+        assertEquals(1, equipo.getVictorias());
+    }
+    
+    @Test
+    public void testRegistrarEmpate() {
+        Equipo equipo = new Equipo();
+        equipo.registrarResultado("empate");
+        assertEquals(1, equipo.getEmpates());
+    }
+    
+    @Test
+    public void testRegistrarDerrota() {
+        Equipo equipo = new Equipo();
+        equipo.registrarResultado("derrota");
+        assertEquals(1, equipo.getDerrotas());
+    }
 }
